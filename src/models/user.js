@@ -1,7 +1,8 @@
 const mongoose = require('mongoose')
 const validator = require('validator')
+const bcrypt = require('bcrypt')
 
-const User = mongoose.model('User', {
+const userSchema = mongoose.Schema({
     name: {
         type: String,
         required: true,
@@ -9,6 +10,7 @@ const User = mongoose.model('User', {
     },
     email: {
         type: String,
+        unique: true,
         required: true,
         trim: true,
         lowercase: true,
@@ -23,7 +25,7 @@ const User = mongoose.model('User', {
         default: 0,
         validate(value) {
             if (value < 0) {
-                throw new Error('Age must be a postive number')
+                throw new Error('Age must be a positive number')
             }
         }
     },
@@ -39,4 +41,30 @@ const User = mongoose.model('User', {
     }
 })
 
+
+
+userSchema
+
+userSchema.statics.findByCredentials = async (email, password) => {
+    const user = await User.findOne({ email })
+    if (!user) {
+        throw new Error('unable to login')
+    }
+    const isMatched = await bcrypt.compare(password, user.password)
+    if (!isMatched) {
+        throw new Error('unable to login')
+    }
+    return user
+}
+
+// hash the plain text password
+userSchema.pre('save', async function (next) {
+    const user = this
+    if (user.isModified('password')) {
+        user.password = await bcrypt.hash(user.password, 10)
+    }
+    next()
+})
+
+const User = mongoose.model('User', userSchema)
 module.exports = User
