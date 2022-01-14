@@ -2,3 +2,7 @@ node_modules
 .ds_store
 playground
 images
+node-course-images
+avatars
+.vscode
+.git
