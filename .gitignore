@@ -6,3 +6,5 @@ node-course-images
 avatars
 .vscode
 .git
+.gitignore
+config
